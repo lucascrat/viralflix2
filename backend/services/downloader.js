@@ -21,7 +21,7 @@ function downloadVideo(url, videoId) {
         const args = [
             url,
             '-f', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4',
-            '--extractor-args', 'youtube:player_client=android,web',
+            '--extractor-args', 'youtube:player_client=ios,web',
             '-o', outputPath
         ];
 
@@ -49,7 +49,7 @@ function downloadVideo(url, videoId) {
                     reject(new Error('Download finalizado, mas o arquivo não foi encontrado: ' + finalPath));
                 }
             } else {
-                reject(new Error(`yt-dlp process exited with code ${code}. Log: ${errorOutput.trim().substring(0, 200)}`));
+                reject(new Error(`yt-dlp process exited with code ${code}. Log: ${errorOutput.trim().slice(-600)}`));
             }
         });
     });

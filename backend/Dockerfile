@@ -4,8 +4,8 @@ FROM node:20-alpine
 RUN apk add --no-cache ffmpeg python3 py3-pip curl
 
 # Instala a última versão oficial do yt-dlp usando o gerenciador de pacotes do Python (pip) 
-# Isso garante compatibilidade total com o Alpine Linux (musl libc) e evita erros "code 1"
-RUN pip install --no-cache-dir --upgrade yt-dlp --break-system-packages
+# Instala diretamente do branch principal (master) para garantir que temos as correções mais recentes do YouTube
+RUN pip install --no-cache-dir -U "yt-dlp[default] @ https://github.com/yt-dlp/yt-dlp/archive/master.zip" --break-system-packages
 
 WORKDIR /app
 
