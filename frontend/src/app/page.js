@@ -93,7 +93,16 @@ export default function Home() {
     if (processing.status === 'baixando') return 'Baixando vídeo do YouTube...';
     if (processing.status === 'editando') return 'Aplicando cortes, música e acelerando...';
     if (processing.status === 'concluido') return 'Pronto para repostar!';
-    if (processing.status === 'erro') return 'Ocorreu um erro no processamento.';
+    if (processing.status === 'erro') {
+      return (
+        <>
+          <p>Ocorreu um erro no processamento.</p>
+          <p style={{ color: '#ef4444', fontSize: '0.9rem', marginTop: '0.5rem', wordBreak: 'break-all' }}>
+            Detalhe: {processing.error || 'Erro desconhecido'}
+          </p>
+        </>
+      );
+    }
     return 'Processando...';
   };
 

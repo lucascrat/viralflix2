@@ -1,7 +1,11 @@
 FROM node:20-alpine
 
-# Instala ffmpeg, python3 (requerido para yt-dlp em algumas situações) e yt-dlp nativamente
-RUN apk add --no-cache ffmpeg python3 yt-dlp
+# Instala dependências essenciais
+RUN apk add --no-cache ffmpeg python3 curl
+
+# Baixa a última versão oficial do yt-dlp direto do GitHub para evitar bloqueios do YouTube
+RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
+    chmod a+rx /usr/local/bin/yt-dlp
 
 WORKDIR /app
 
