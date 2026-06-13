@@ -17,16 +17,12 @@ function processVideo(inputPath, videoId, bgMusicPath) {
 
         console.log(`Iniciando processamento do vídeo: ${inputPath}`);
 
-        const command = ffmpeg()
-            .input(inputPath)
-            .input(bgMusicPath)
-            // Complex filter para mixar o áudio do vídeo original acelerado com a música de fundo com volume baixo
-            // [0:a] = áudio do vídeo, atempo=1.2 (acelera) -> [a1]
-            // [1:a] = música de fundo, volume=0.1 -> [a2]
-            // [a1][a2] amix=inputs=2:duration=first -> [a_out]
-            // O vídeo original por enquanto passaremos apenas copiando (sem alterar a velocidade do vídeo em si, 
-            // mas o usuário pediu para acelerar o áudio. Isso causará dessincronização se não acelerarmos o vídeo. 
-            // Para acelerar o vídeo: setpts=1/1.2*PTS)
+        const hasBgMusic = fs.existsSync(bgMusicPath);
+        
+        const command = ffmpeg().input(inputPath);
+        
+        if (hasBgMusic) {
+            command.input(bgMusicPath)
             .complexFilter([
                 '[0:v]setpts=0.833*PTS[v_out]', // 1 / 1.2 = 0.833
                 '[0:a]atempo=1.2[a1]',
@@ -37,12 +33,29 @@ function processVideo(inputPath, videoId, bgMusicPath) {
                 '-map [v_out]',
                 '-map [a_out]',
                 '-c:v libx264',
-                '-preset ultrafast', // Ultrafast para testes rápidos locais
+                '-preset ultrafast',
                 '-c:a aac',
                 '-b:a 128k',
-                '-y' // Sobrescrever se existir
+                '-y'
+            ]);
+        } else {
+            // Se não tem música de fundo, apenas acelera o vídeo e áudio principal
+            command.complexFilter([
+                '[0:v]setpts=0.833*PTS[v_out]',
+                '[0:a]atempo=1.2[a_out]'
             ])
-            .save(outputPath);
+            .outputOptions([
+                '-map [v_out]',
+                '-map [a_out]',
+                '-c:v libx264',
+                '-preset ultrafast',
+                '-c:a aac',
+                '-b:a 128k',
+                '-y'
+            ]);
+        }
+        
+        command.save(outputPath);
 
         command.on('start', (commandLine) => {
             console.log('Comando FFmpeg spawnado: ' + commandLine);
