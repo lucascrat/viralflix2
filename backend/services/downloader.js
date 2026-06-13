@@ -18,21 +18,24 @@ function downloadVideo(url, videoId) {
             ? path.join(__dirname, '..', 'yt-dlp.exe') 
             : 'yt-dlp'; // No linux (Docker), o yt-dlp será instalado globalmente via apk
 
-        // Formato para baixar o melhor video + melhor audio, e juntar em mp4
         const args = [
             url,
             '-f', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4',
+            '--extractor-args', 'youtube:player_client=android,web',
             '-o', outputPath
         ];
 
         console.log(`Iniciando download do vídeo: ${url}`);
         const ytDlpProcess = spawn(ytDlpPath, args);
 
+        let errorOutput = '';
+
         ytDlpProcess.stdout.on('data', (data) => {
             console.log(`yt-dlp: ${data}`);
         });
 
         ytDlpProcess.stderr.on('data', (data) => {
+            errorOutput += data.toString();
             console.error(`yt-dlp error: ${data}`);
         });
 
@@ -46,7 +49,7 @@ function downloadVideo(url, videoId) {
                     reject(new Error('Download finalizado, mas o arquivo não foi encontrado: ' + finalPath));
                 }
             } else {
-                reject(new Error(`yt-dlp process exited with code ${code}`));
+                reject(new Error(`yt-dlp process exited with code ${code}. Log: ${errorOutput.trim().substring(0, 200)}`));
             }
         });
     });
