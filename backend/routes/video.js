@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const ytSearch = require('yt-search');
 const { downloadVideo } = require('../services/downloader');
 const { processVideo } = require('../services/editor');
 const path = require('path');
@@ -18,28 +19,29 @@ router.get('/', (req, res) => {
     res.json(feedVideos);
 });
 
-// Nova rota de pesquisa usando a API do iTunes (gratuita, sem necessidade de chave)
+// Nova rota de pesquisa usando YouTube diretamente (yt-search)
 router.get('/search', async (req, res) => {
     const { q } = req.query;
     if (!q) return res.json(feedVideos);
 
     try {
-        const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=movie&country=br&lang=pt_br&limit=12`);
-        const data = await response.json();
+        // Busca o filme ou série diretamente no YouTube
+        const r = await ytSearch(q + " trailer dublado oficial");
+        const videos = r.videos.slice(0, 12);
         
-        const results = data.results.map(movie => ({
-            id: movie.trackId.toString(),
-            title: movie.trackName,
-            synopsis: movie.longDescription || movie.shortDescription || 'Sinopse não disponível.',
-            thumbnail: movie.artworkUrl100 ? movie.artworkUrl100.replace('100x100bb', '600x600bb') : '',
-            // O yt-dlp vai pesquisar automaticamente por esse trailer no YouTube
-            url: `ytsearch1:Trailer Oficial ${movie.trackName} dublado pt-br`
+        const results = videos.map(video => ({
+            id: video.videoId,
+            title: video.title,
+            synopsis: video.description || 'Nenhuma descrição disponível.',
+            thumbnail: video.thumbnail || video.image,
+            // A URL real do YouTube
+            url: video.url
         }));
 
         res.json(results);
     } catch (err) {
-        console.error('Erro na busca:', err);
-        res.status(500).json({ error: 'Erro ao buscar filmes.' });
+        console.error('Erro na busca do YouTube:', err);
+        res.status(500).json({ error: 'Erro ao buscar vídeos no YouTube.' });
     }
 });
 
