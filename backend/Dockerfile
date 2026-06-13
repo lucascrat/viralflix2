@@ -1,11 +1,11 @@
 FROM node:20-alpine
 
 # Instala dependências essenciais
-RUN apk add --no-cache ffmpeg python3 curl
+RUN apk add --no-cache ffmpeg python3 py3-pip curl
 
-# Baixa a última versão oficial do yt-dlp direto do GitHub para evitar bloqueios do YouTube
-RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
-    chmod a+rx /usr/local/bin/yt-dlp
+# Instala a última versão oficial do yt-dlp usando o gerenciador de pacotes do Python (pip) 
+# Isso garante compatibilidade total com o Alpine Linux (musl libc) e evita erros "code 1"
+RUN pip install --no-cache-dir --upgrade yt-dlp --break-system-packages
 
 WORKDIR /app
 
