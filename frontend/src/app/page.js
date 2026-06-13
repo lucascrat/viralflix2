@@ -9,9 +9,16 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
+  const getApiBase = () => {
+    if (typeof window !== 'undefined' && window.location.hostname.includes('appbr.pro')) {
+      return 'https://api.viralflix.appbr.pro';
+    }
+    return `http://${typeof window !== 'undefined' ? window.location.hostname : 'localhost'}:3001`;
+  };
+
   // Carrega os vídeos iniciais
   useEffect(() => {
-    const apiUrl = `http://${window.location.hostname}:3001/api/videos`;
+    const apiUrl = `${getApiBase()}/api/videos`;
     fetch(apiUrl)
       .then(res => res.json())
       .then(data => setVideos(data))
@@ -23,7 +30,7 @@ export default function Home() {
     let interval;
     if (processing && processing.status !== 'concluido' && processing.status !== 'erro') {
       interval = setInterval(() => {
-        fetch(`http://${window.location.hostname}:3001/api/videos/status/${processing.id}`)
+        fetch(`${getApiBase()}/api/videos/status/${processing.id}`)
           .then(res => res.json())
           .then(data => {
             setProcessing(prev => ({ ...prev, ...data }));
@@ -38,7 +45,7 @@ export default function Home() {
     e.preventDefault();
     if (!searchQuery.trim()) {
       // Se vazio, recarrega o feed inicial
-      const apiUrl = `http://${window.location.hostname}:3001/api/videos`;
+      const apiUrl = `${getApiBase()}/api/videos`;
       const res = await fetch(apiUrl);
       const data = await res.json();
       setVideos(data);
@@ -47,7 +54,7 @@ export default function Home() {
 
     setIsSearching(true);
     try {
-      const res = await fetch(`http://${window.location.hostname}:3001/api/videos/search?q=${encodeURIComponent(searchQuery)}`);
+      const res = await fetch(`${getApiBase()}/api/videos/search?q=${encodeURIComponent(searchQuery)}`);
       const data = await res.json();
       setVideos(data);
     } catch (err) {
@@ -60,7 +67,7 @@ export default function Home() {
 
   const handleProcess = async (url) => {
     try {
-      const res = await fetch(`http://${window.location.hostname}:3001/api/videos/process`, {
+      const res = await fetch(`${getApiBase()}/api/videos/process`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url })
@@ -154,7 +161,7 @@ export default function Home() {
             <p className="status-text">{getStatusText()}</p>
 
             {processing.status === 'concluido' && (
-              <a href={`http://${window.location.hostname}:3001${processing.downloadUrl}`} download>
+              <a href={`${getApiBase()}${processing.downloadUrl}`} download>
                 <button className="btn-primary" style={{ marginBottom: '1rem' }}>
                   Baixar Arquivo Final
                 </button>
