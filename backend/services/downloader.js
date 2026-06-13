@@ -13,8 +13,10 @@ function downloadVideo(url, videoId) {
         const tempDir = path.join(__dirname, '..', 'temp');
         const outputPath = path.join(tempDir, `${videoId}.%(ext)s`);
         
-        // Caminho do yt-dlp baixado no backend
-        const ytDlpPath = path.join(__dirname, '..', 'yt-dlp.exe');
+        // Determina o caminho do yt-dlp dependendo do sistema operacional (útil para o deploy no Coolify/Linux)
+        const ytDlpPath = process.platform === 'win32' 
+            ? path.join(__dirname, '..', 'yt-dlp.exe') 
+            : 'yt-dlp'; // No linux (Docker), o yt-dlp será instalado globalmente via apk
 
         // Formato para baixar o melhor video + melhor audio, e juntar em mp4
         const args = [
